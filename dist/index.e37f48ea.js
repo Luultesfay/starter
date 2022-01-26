@@ -524,7 +524,15 @@ var _webImmediateJs = require("core-js/modules/web.immediate.js");
 var _modelJs = require("./model.js"); //import all the model
 var _recipeViewJs = require("./view/recipeView.js");
 var _recipeViewJsDefault = parcelHelpers.interopDefault(_recipeViewJs);
+var _searchViewJs = require("./view/searchView.js");
+var _searchViewJsDefault = parcelHelpers.interopDefault(_searchViewJs);
+var _resultViewJs = require("./view/resultView.js");
+var _resultViewJsDefault = parcelHelpers.interopDefault(_resultViewJs);
 var _runtime = require("regenerator-runtime/runtime"); //this is for polyfiling async/await
+//this hot module prevent the page from loading whwn ever we change the code but if we remove the hot module  it will load when ever we change codes
+// if (module.hot) {
+//   module.hot.accept();
+// }
 //const recipeContainer = document.querySelector('.recipe');
 // https://forkify-api.herokuapp.com/v2
 ///////////////////////////////////////
@@ -532,16 +540,35 @@ var _runtime = require("regenerator-runtime/runtime"); //this is for polyfiling 
 const controlRecipes = async function() {
     try {
         const id = window.location.hash.slice(1); //we select the hash from the window location of the web page and slice only the number
-        console.log(id);
+        //console.log(id);
         if (!id) return;
         _recipeViewJsDefault.default.renderSpinner();
         //1,loading recipe
         await _modelJs.loadRecipe(id); // data in the model loded with this id
         //2 rendering recipe
         _recipeViewJsDefault.default.render(_modelJs.state.recipe); //the data from model passed to the render method in the view // this is the brige between model and view
+        console.log(_modelJs.state.recipe);
     } catch (err) {
         //alert(err);
         _recipeViewJsDefault.default.renderError();
+    }
+};
+const controlSearchResults = async function() {
+    try {
+        _resultViewJsDefault.default.renderSpinner();
+        console.log(_resultViewJsDefault.default);
+        //1.  get search query
+        const query = _searchViewJsDefault.default.getQuery();
+        if (!query) return;
+        //2.load search result
+        await _modelJs.loadSearchResult(query);
+        console.log(query);
+        //3.render results
+        //console.log(model.state.search.results);
+        //resultView.render(model.state.search.results); //this give us all the result on the page
+        _resultViewJsDefault.default.render(_modelJs.getSearchResultPage()); //this give us part of the search result per page
+    } catch (err) {
+        console.log(err);
     }
 };
 //subscriber
@@ -549,10 +576,11 @@ const controlRecipes = async function() {
 //here we connect controller and view
 const init = function() {
     _recipeViewJsDefault.default.eventHandlerRender(controlRecipes); //we are handling the event in  the  controller  that comes from view
+    _searchViewJsDefault.default.addHandlerSearch(controlSearchResults); //subscriber
 };
 init();
 
-},{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"49tUX":[function(require,module,exports) {
+},{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./view/searchView.js":"blwqv","./view/resultView.js":"i3HJw"}],"49tUX":[function(require,module,exports) {
 var $ = require('../internals/export');
 var global = require('../internals/global');
 var task = require('../internals/task');
@@ -1622,6 +1650,7 @@ MVC is an architectural pattern consisting of three parts: Model, View, Controll
 */ //HERE WE WILL REFACTOR THE  MODEL
 var _regeneratorRuntime = require("regenerator-runtime");
 var _configJs = require("./config.js");
+//import { RES_PER_PAGE } from './config.js';
 var _helpersJs = require("./helpers.js");
 const state = {
     recipe: {
@@ -1676,6 +1705,8 @@ const getSearchResultPage = function(page = state.search.page) {
     state.search.page = page;
     const start = (page - 1) * state.search.resultsPerPage; //0;
     const end = page * state.search.resultsPerPage; //9;
+    console.log(state.search.resultsPerPage);
+    console.log(start, end);
     return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
 };
 
@@ -2266,8 +2297,11 @@ parcelHelpers.export(exports, "API_URL", ()=>API_URL
 );
 parcelHelpers.export(exports, "TIME_OUT", ()=>TIME_OUT
 );
+parcelHelpers.export(exports, "RES_PER_PAGE", ()=>RES_PER_PAGE
+);
 const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
 const TIME_OUT = 10;
+const RES_PER_PAGE = 10;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -2774,6 +2808,109 @@ Fraction.primeFactors = function(n) {
 };
 module.exports.Fraction = Fraction;
 
-},{}]},["ddCAb","aenu9"], "aenu9", "parcelRequire7e89")
+},{}],"blwqv":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class SearchView {
+    _parentElement = document.querySelector('.search');
+    getQuery() {
+        const query = this._parentElement.querySelector('.search__field').value; //any input values that is  pizza or avecado ....
+        this._clearInput(); //this method  clears the search instantly
+        return query;
+    }
+    _clearInput() {
+        this._parentElement.querySelector('.search__field').value = '';
+    }
+    addHandlerSearch(handler) {
+        //publisher
+        this._parentElement.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handler();
+        });
+    }
+}
+exports.default = new SearchView();
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i3HJw":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewsJs = require("./views.js");
+var _viewsJsDefault = parcelHelpers.interopDefault(_viewsJs);
+var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class ResultView extends _viewsJsDefault.default {
+    _parentElement = document.querySelector('.results');
+    _ErrorMessage = 'No Recipe found for your Query! please try again';
+    _message = '';
+    _generateMarkup() {
+        console.log(this._data);
+        return this._data.map(this._generateMarkupPreview).join(''); // we loop over the preview
+    }
+    _generateMarkupPreview(result) {
+        return `<li class="preview">
+  <a class="preview__link " href="#${result.id}">
+    <figure class="preview__fig">
+      <img src="${result.image}" alt='${result.title}' />
+    </figure>
+    <div class="preview__data">
+      <h4 class="preview__title">${result.title}</h4>
+      <p class="preview__publisher">${result.publisher}</p>
+      
+    </div>
+  </a>
+</li>`;
+    }
+}
+exports.default = new ResultView();
+
+},{"./views.js":"ez8yY","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ez8yY":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class views {
+    //this views is parent class  becouse all this is common to all views so they can inherit from it
+    _data;
+    render(data) {
+        console.log(data);
+        if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
+        this._data = data; //this data is came from model through controller
+        const markup = this._generateMarkup();
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    _clear() {
+        this._parentElement.innerHTML = '';
+    }
+    //spinner function
+    renderSpinner() {
+        const markup = `<div class="spinner">
+    <svg>
+      <use href="${_iconsSvgDefault.default}#icon-loader"></use>
+    </svg>
+  </div>`;
+        this._clear;
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    //error handling in the view
+    renderError(message = this._ErrorMessage) {
+        //message gets from the controller
+        //
+        //the massage passed
+        const markup = `<div class="error">
+    <div>
+      <svg>
+        <use href="${_iconsSvgDefault.default}#icon-alert-triangle"></use>
+      </svg>
+    </div>
+    <p>${message}</p> 
+  </div> `;
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+}
+exports.default = views;
+
+},{"url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["ddCAb","aenu9"], "aenu9", "parcelRequire7e89")
 
 //# sourceMappingURL=index.e37f48ea.js.map

@@ -2,6 +2,7 @@ import * as model from './model.js'; //import all the model
 import recipeView from './view/recipeView.js';
 import searchView from './view/searchView.js';
 import resultView from './view/resultView.js';
+
 import 'core-js/stable'; //this is for polyfiling evrything
 import 'regenerator-runtime/runtime'; //this is for polyfiling async/await
 //this hot module prevent the page from loading whwn ever we change the code but if we remove the hot module  it will load when ever we change codes
@@ -46,11 +47,12 @@ const controlSearchResults = async function () {
     if (!query) return;
     //2.load search result
     await model.loadSearchResult(query);
-    //console.log(query);
+    console.log(query);
 
     //3.render results
     //console.log(model.state.search.results);
-    //resultView.render(model.state.search.results);//this give us all the result on the page
+    //resultView.render(model.state.search.results); //this give us all the result on the page
+
     resultView.render(model.getSearchResultPage()); //this give us part of the search result per page
   } catch (err) {
     console.log(err);

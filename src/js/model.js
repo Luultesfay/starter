@@ -9,16 +9,18 @@ MVC is an architectural pattern consisting of three parts: Model, View, Controll
 
 import { async } from 'regenerator-runtime';
 import { API_URL, RES_PER_PAGE } from './config.js';
+//import { RES_PER_PAGE } from './config.js';
 import { getJSON } from './helpers.js';
 export const state = {
   recipe: {},
   search: {
     query: '',
     results: [],
-    resultsPerPage: RES_PER_PAGE, //10
+    resultsPerPage: RES_PER_PAGE,
     page: 1,
   },
 };
+
 //this function is responsible for fecthing  data from forkfy Api
 export const loadRecipe = async function (id) {
   try {
@@ -68,7 +70,10 @@ export const loadSearchResult = async function (query) {
 
 export const getSearchResultPage = function (page = state.search.page) {
   state.search.page = page;
+
   const start = (page - 1) * state.search.resultsPerPage; //0;
   const end = page * state.search.resultsPerPage; //9;
+  console.log(state.search.resultsPerPage);
+  console.log(start, end);
   return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
 };

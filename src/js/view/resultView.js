@@ -4,6 +4,7 @@ class ResultView extends views {
   _parentElement = document.querySelector('.results');
   _ErrorMessage = 'No Recipe found for your Query! please try again';
   _message = '';
+
   _generateMarkup() {
     console.log(this._data);
     return this._data.map(this._generateMarkupPreview).join(''); // we loop over the preview

@@ -4,6 +4,7 @@ export default class views {
 
   _data;
   render(data) {
+    console.log(data);
     if (!data || (Array.isArray(data) && data.length === 0))
       return this.renderError();
     this._data = data; //this data is came from model through controller
