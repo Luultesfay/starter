@@ -8,8 +8,8 @@ MVC is an architectural pattern consisting of three parts: Model, View, Controll
 //HERE WE WILL REFACTOR THE  MODEL
 
 import { async } from 'regenerator-runtime';
-import { API_URL, RES_PER_PAGE } from './config.js';
-//import { RES_PER_PAGE } from './config.js';
+import { API_URL } from './config.js';
+import { RES_PER_PAGE } from './config.js';
 import { getJSON } from './helpers.js';
 export const state = {
   recipe: {},
@@ -73,7 +73,7 @@ export const getSearchResultPage = function (page = state.search.page) {
 
   const start = (page - 1) * state.search.resultsPerPage; //0;
   const end = page * state.search.resultsPerPage; //9;
-  //console.log(state.search.resultsPerPage);
-  //console.log(start, end);
+  console.log(state.search.resultsPerPage);
+  console.log(start, end);
   return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
 };

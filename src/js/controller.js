@@ -22,7 +22,7 @@ import 'regenerator-runtime/runtime'; //this is for polyfiling async/await
 const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1); //we select the hash from the window location of the web page and slice only the number
-    //console.log(id);
+    console.log(id);
     if (!id) return;
 
     recipeView.renderSpinner();
@@ -54,13 +54,21 @@ const controlSearchResults = async function () {
     //console.log(model.state.search.results);
     //resultView.render(model.state.search.results); //this give us all the result on the page
 
-    resultView.render(model.getSearchResultPage()); //this give us part of the search result per page
+    resultView.render(model.getSearchResultPage(4)); //this give us part of the search result per page
 
     //4 , render pagination inital buttons
     PaginationVew.render(model.state.search);
   } catch (err) {
     console.log(err);
   }
+};
+const controlPagination = function (gotoPage) {
+  //render NEW results
+  resultView.render(model.getSearchResultPage(gotoPage)); //this give us part of the search result per page
+
+  //4 , render new pagination buttons
+  PaginationVew.render(model.state.search);
+  console.log(gotoPage);
 };
 
 //subscriber
@@ -69,5 +77,6 @@ const controlSearchResults = async function () {
 const init = function () {
   recipeView.eventHandlerRender(controlRecipes); //we are handling the event in  the  controller  that comes from view
   searchView.addHandlerSearch(controlSearchResults); //subscriber
+  PaginationVew.addHandlerClick(controlPagination);
 };
 init();

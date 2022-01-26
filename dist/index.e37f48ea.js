@@ -542,7 +542,7 @@ var _runtime = require("regenerator-runtime/runtime"); //this is for polyfiling 
 const controlRecipes = async function() {
     try {
         const id = window.location.hash.slice(1); //we select the hash from the window location of the web page and slice only the number
-        //console.log(id);
+        console.log(id);
         if (!id) return;
         _recipeViewJsDefault.default.renderSpinner();
         //1,loading recipe
@@ -568,12 +568,19 @@ const controlSearchResults = async function() {
         //3.render results
         //console.log(model.state.search.results);
         //resultView.render(model.state.search.results); //this give us all the result on the page
-        _resultViewJsDefault.default.render(_modelJs.getSearchResultPage()); //this give us part of the search result per page
+        _resultViewJsDefault.default.render(_modelJs.getSearchResultPage(4)); //this give us part of the search result per page
         //4 , render pagination inital buttons
         _paginationVewJsDefault.default.render(_modelJs.state.search);
     } catch (err) {
         console.log(err);
     }
+};
+const controlPagination = function(gotoPage) {
+    //render NEW results
+    _resultViewJsDefault.default.render(_modelJs.getSearchResultPage(gotoPage)); //this give us part of the search result per page
+    //4 , render new pagination buttons
+    _paginationVewJsDefault.default.render(_modelJs.state.search);
+    console.log(gotoPage);
 };
 //subscriber
 //event are handled in the controller and listened in the view
@@ -581,6 +588,7 @@ const controlSearchResults = async function() {
 const init = function() {
     _recipeViewJsDefault.default.eventHandlerRender(controlRecipes); //we are handling the event in  the  controller  that comes from view
     _searchViewJsDefault.default.addHandlerSearch(controlSearchResults); //subscriber
+    _paginationVewJsDefault.default.addHandlerClick(controlPagination);
 };
 init();
 
@@ -1654,7 +1662,6 @@ MVC is an architectural pattern consisting of three parts: Model, View, Controll
 */ //HERE WE WILL REFACTOR THE  MODEL
 var _regeneratorRuntime = require("regenerator-runtime");
 var _configJs = require("./config.js");
-//import { RES_PER_PAGE } from './config.js';
 var _helpersJs = require("./helpers.js");
 const state = {
     recipe: {
@@ -1709,8 +1716,8 @@ const getSearchResultPage = function(page = state.search.page) {
     state.search.page = page;
     const start = (page - 1) * state.search.resultsPerPage; //0;
     const end = page * state.search.resultsPerPage; //9;
-    //console.log(state.search.resultsPerPage);
-    //console.log(start, end);
+    console.log(state.search.resultsPerPage);
+    console.log(start, end);
     return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
 };
 
@@ -2375,45 +2382,12 @@ parcelHelpers.defineInteropFlag(exports);
 var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
 var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 var _fractional = require("fractional"); //first we  installed (npm i fractional ) then inported it
-class recipeView {
-    #parentElement = document.querySelector('.recipe');
-    #data;
-    #ErrorMessage = 'we coud not find the recipe, try another one';
-    render(data) {
-        this.#data = data; //this data is came from model through controller
-        const markup = this.#generateMarkup();
-        this.#clear();
-        this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-    }
-     #clear() {
-        this.#parentElement.innerHTML = '';
-    }
-    //spinner function
-    renderSpinner() {
-        const markup = `<div class="spinner">
-    <svg>
-      <use href="${_iconsSvgDefault.default}#icon-loader"></use>
-    </svg>
-  </div>`;
-        this.#parentElement.innerHTML = '';
-        this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-    }
-    //error handling in the view
-    renderError(message = this.#ErrorMessage) {
-        //message gets from the controller
-        //
-        //the massage passed
-        const markup = `<div class="error">
-    <div>
-      <svg>
-        <use href="${_iconsSvgDefault.default}#icon-alert-triangle"></use>
-      </svg>
-    </div>
-    <p>${message}</p> 
-  </div> `;
-        this.#parentElement.innerHTML = '';
-        this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-    }
+var _viewsJs = require("./views.js");
+var _viewsJsDefault = parcelHelpers.interopDefault(_viewsJs);
+class recipeView extends _viewsJsDefault.default {
+    _parentElement = document.querySelector('.recipe');
+    _ErrorMessage = 'we coud not find the recipe, try another one';
+    _message = '';
     //publisher
     //we put the event listner in the view becouse event shoud be in the view  and event shoud be hundled in the controller
     eventHandlerRender(handler) {
@@ -2427,11 +2401,11 @@ class recipeView {
         ].forEach((ev)=>window.addEventListener(ev, handler)
         ); //the same like the above code
     }
-     #generateMarkup() {
+    _generateMarkup() {
         return `<figure class="recipe__fig">
-          <img src="${this.#data.image}" alt="${this.#data.title}" class="recipe__img" />
+          <img src="${this._data.image}" alt="${this._data.title}" class="recipe__img" />
           <h1 class="recipe__title">
-            <span>${this.#data.title}</span>
+            <span>${this._data.title}</span>
           </h1>
         </figure>
     
@@ -2440,14 +2414,14 @@ class recipeView {
             <svg class="recipe__info-icon">
               <use href="${_iconsSvgDefault.default}#icon-clock"></use>
             </svg>
-            <span class="recipe__info-data recipe__info-data--minutes">${this.#data.cookingTime}</span>
+            <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>
             <span class="recipe__info-text">minutes</span>
           </div>
           <div class="recipe__info">
             <svg class="recipe__info-icon">
               <use href="${_iconsSvgDefault.default}#icon-users"></use>
             </svg>
-            <span class="recipe__info-data recipe__info-data--people">${this.#data.servings}</span>
+            <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>
             <span class="recipe__info-text">servings</span>
     
             <div class="recipe__info-buttons">
@@ -2480,7 +2454,7 @@ class recipeView {
           <h2 class="heading--2">Recipe ingredients</h2>
           <ul class="recipe__ingredient-list">
     
-          ${this.#data.ingredients.map(this.#generateMarkupIngrident).join('')}
+          ${this._data.ingredients.map(this._generateMarkupIngrident).join('')}
             
     
             
@@ -2491,12 +2465,12 @@ class recipeView {
           <h2 class="heading--2">How to cook it</h2>
           <p class="recipe__directions-text">
             This recipe was carefully designed and tested by
-            <span class="recipe__publisher">T${this.#data.publisher}</span>. Please check out
+            <span class="recipe__publisher">T${this._data.publisher}</span>. Please check out
             directions at their website.
           </p>
           <a
             class="btn--small recipe__btn"
-            href="${this.#data.sourceUrl}"
+            href="${this._data.sourceUrl}"
             target="_blank"
           >
             <span>Directions</span>
@@ -2506,7 +2480,7 @@ class recipeView {
           </a>
         </div>`;
     }
-     #generateMarkupIngrident(ing) {
+    _generateMarkupIngrident(ing) {
         return `<li class="recipe__ingredient">
   <svg class="recipe__icon">
     <use href="${_iconsSvgDefault.default}#icon-check"></use>
@@ -2521,7 +2495,7 @@ class recipeView {
 }
 exports.default = new recipeView();
 
-},{"url:../../img/icons.svg":"loVOp","fractional":"3SU56","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"loVOp":[function(require,module,exports) {
+},{"url:../../img/icons.svg":"loVOp","fractional":"3SU56","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./views.js":"ez8yY"}],"loVOp":[function(require,module,exports) {
 module.exports = require('./helpers/bundle-url').getBundleURL('hWUTQ') + "icons.dfd7a6db.svg" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
@@ -2812,7 +2786,55 @@ Fraction.primeFactors = function(n) {
 };
 module.exports.Fraction = Fraction;
 
-},{}],"blwqv":[function(require,module,exports) {
+},{}],"ez8yY":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class views {
+    //this views is parent class  becouse all this is common to all views so they can inherit from it
+    _data;
+    render(data) {
+        console.log(data);
+        if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
+        this._data = data; //this data is came from model through controller
+        const markup = this._generateMarkup();
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    _clear() {
+        this._parentElement.innerHTML = '';
+    }
+    //spinner function
+    renderSpinner() {
+        const markup = `<div class="spinner">
+    <svg>
+      <use href="${_iconsSvgDefault.default}#icon-loader"></use>
+    </svg>
+  </div>`;
+        this._clear;
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    //error handling in the view
+    renderError(message = this._ErrorMessage) {
+        //message gets from the controller
+        //
+        //the massage passed
+        const markup = `<div class="error">
+    <div>
+      <svg>
+        <use href="${_iconsSvgDefault.default}#icon-alert-triangle"></use>
+      </svg>
+    </div>
+    <p>${message}</p> 
+  </div> `;
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+}
+exports.default = views;
+
+},{"url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"blwqv":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class SearchView {
@@ -2867,55 +2889,7 @@ class ResultView extends _viewsJsDefault.default {
 }
 exports.default = new ResultView();
 
-},{"./views.js":"ez8yY","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ez8yY":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
-class views {
-    //this views is parent class  becouse all this is common to all views so they can inherit from it
-    _data;
-    render(data) {
-        console.log(data);
-        if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
-        this._data = data; //this data is came from model through controller
-        const markup = this._generateMarkup();
-        this._clear();
-        this._parentElement.insertAdjacentHTML('afterbegin', markup);
-    }
-    _clear() {
-        this._parentElement.innerHTML = '';
-    }
-    //spinner function
-    renderSpinner() {
-        const markup = `<div class="spinner">
-    <svg>
-      <use href="${_iconsSvgDefault.default}#icon-loader"></use>
-    </svg>
-  </div>`;
-        this._clear;
-        this._parentElement.insertAdjacentHTML('afterbegin', markup);
-    }
-    //error handling in the view
-    renderError(message = this._ErrorMessage) {
-        //message gets from the controller
-        //
-        //the massage passed
-        const markup = `<div class="error">
-    <div>
-      <svg>
-        <use href="${_iconsSvgDefault.default}#icon-alert-triangle"></use>
-      </svg>
-    </div>
-    <p>${message}</p> 
-  </div> `;
-        this._clear();
-        this._parentElement.insertAdjacentHTML('afterbegin', markup);
-    }
-}
-exports.default = views;
-
-},{"url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6rdvz":[function(require,module,exports) {
+},{"./views.js":"ez8yY","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6rdvz":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _viewsJs = require("./views.js");
@@ -2924,13 +2898,52 @@ var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
 var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class PaginationView extends _viewsJsDefault.default {
     _parentElement = document.querySelector('.pagination');
+    addHandlerClick(handler) {
+        this._parentElement.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn--inline');
+            console.log(btn);
+            if (!btn) return;
+            const gotoPage = +btn.dataset.goto;
+            console.log(gotoPage);
+            handler(gotoPage);
+        });
+    }
     _generateMarkup() {
-        const numberOfPages = math.celi(this._data.results.length / this._data.resultsPerPage);
+        const curPage = this._data.page;
+        const numberOfPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
         console.log(numberOfPages);
-    //1, page 1 and other pages
-    //2, other pages
-    //3, page1 no other pages
-    //4, last page
+        //1, page 1 and other pages
+        if (curPage === 1 && numberOfPages > 1) return `<button  data-goto= "${curPage + 1}"
+      class="btn--inline pagination__btn--next">
+      <span>Page ${curPage + 1}</span>
+      <svg class="search__icon">
+        <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>
+      </svg>
+    </button>`;
+        //2, page1 no other pages
+        if (curPage === 1) return '';
+        //3, last page
+        if (curPage === numberOfPages && numberOfPages > 1) return `<button   data-goto= "${curPage - 1}"
+       class="btn--inline pagination__btn--prev">
+      <svg class="search__icon">
+        <use href="${_iconsSvgDefault.default}#icon-arrow-left"></use>
+      </svg>
+      <span>Page ${curPage - 1}</span>
+    </button>`;
+        //4, other pages
+        if (curPage < numberOfPages) return `<button   data-goto= "${curPage - 1}" class="btn--inline pagination__btn--prev">
+        <svg class="search__icon">
+          <use href="${_iconsSvgDefault.default}#icon-arrow-left"></use>
+        </svg>
+        <span>Page ${curPage - 1}</span>
+      </button>
+      <button data-goto= "${curPage + 1}"
+      class="btn--inline pagination__btn--next">
+      <span>Page ${curPage + 1}</span>
+      <svg class="search__icon">
+        <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>
+      </svg>
+    </button>`;
     }
 }
 exports.default = new PaginationView();
