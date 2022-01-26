@@ -2,6 +2,7 @@ import * as model from './model.js'; //import all the model
 import recipeView from './view/recipeView.js';
 import searchView from './view/searchView.js';
 import resultView from './view/resultView.js';
+import PaginationVew from './view/paginationVew.js';
 
 import 'core-js/stable'; //this is for polyfiling evrything
 import 'regenerator-runtime/runtime'; //this is for polyfiling async/await
@@ -54,6 +55,9 @@ const controlSearchResults = async function () {
     //resultView.render(model.state.search.results); //this give us all the result on the page
 
     resultView.render(model.getSearchResultPage()); //this give us part of the search result per page
+
+    //4 , render pagination inital buttons
+    PaginationVew.render(model.state.search);
   } catch (err) {
     console.log(err);
   }

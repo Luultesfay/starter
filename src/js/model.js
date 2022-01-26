@@ -73,7 +73,7 @@ export const getSearchResultPage = function (page = state.search.page) {
 
   const start = (page - 1) * state.search.resultsPerPage; //0;
   const end = page * state.search.resultsPerPage; //9;
-  console.log(state.search.resultsPerPage);
-  console.log(start, end);
+  //console.log(state.search.resultsPerPage);
+  //console.log(start, end);
   return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
 };

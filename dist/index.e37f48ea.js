@@ -528,6 +528,8 @@ var _searchViewJs = require("./view/searchView.js");
 var _searchViewJsDefault = parcelHelpers.interopDefault(_searchViewJs);
 var _resultViewJs = require("./view/resultView.js");
 var _resultViewJsDefault = parcelHelpers.interopDefault(_resultViewJs);
+var _paginationVewJs = require("./view/paginationVew.js");
+var _paginationVewJsDefault = parcelHelpers.interopDefault(_paginationVewJs);
 var _runtime = require("regenerator-runtime/runtime"); //this is for polyfiling async/await
 //this hot module prevent the page from loading whwn ever we change the code but if we remove the hot module  it will load when ever we change codes
 // if (module.hot) {
@@ -567,6 +569,8 @@ const controlSearchResults = async function() {
         //console.log(model.state.search.results);
         //resultView.render(model.state.search.results); //this give us all the result on the page
         _resultViewJsDefault.default.render(_modelJs.getSearchResultPage()); //this give us part of the search result per page
+        //4 , render pagination inital buttons
+        _paginationVewJsDefault.default.render(_modelJs.state.search);
     } catch (err) {
         console.log(err);
     }
@@ -580,7 +584,7 @@ const init = function() {
 };
 init();
 
-},{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./view/searchView.js":"blwqv","./view/resultView.js":"i3HJw"}],"49tUX":[function(require,module,exports) {
+},{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./view/searchView.js":"blwqv","./view/resultView.js":"i3HJw","./view/paginationVew.js":"6rdvz"}],"49tUX":[function(require,module,exports) {
 var $ = require('../internals/export');
 var global = require('../internals/global');
 var task = require('../internals/task');
@@ -1705,8 +1709,8 @@ const getSearchResultPage = function(page = state.search.page) {
     state.search.page = page;
     const start = (page - 1) * state.search.resultsPerPage; //0;
     const end = page * state.search.resultsPerPage; //9;
-    console.log(state.search.resultsPerPage);
-    console.log(start, end);
+    //console.log(state.search.resultsPerPage);
+    //console.log(start, end);
     return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
 };
 
@@ -2911,6 +2915,26 @@ class views {
 }
 exports.default = views;
 
-},{"url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["ddCAb","aenu9"], "aenu9", "parcelRequire7e89")
+},{"url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6rdvz":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewsJs = require("./views.js");
+var _viewsJsDefault = parcelHelpers.interopDefault(_viewsJs);
+var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class PaginationView extends _viewsJsDefault.default {
+    _parentElement = document.querySelector('.pagination');
+    _generateMarkup() {
+        const numberOfPages = math.celi(this._data.results.length / this._data.resultsPerPage);
+        console.log(numberOfPages);
+    //1, page 1 and other pages
+    //2, other pages
+    //3, page1 no other pages
+    //4, last page
+    }
+}
+exports.default = new PaginationView();
+
+},{"./views.js":"ez8yY","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["ddCAb","aenu9"], "aenu9", "parcelRequire7e89")
 
 //# sourceMappingURL=index.e37f48ea.js.map
