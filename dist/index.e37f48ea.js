@@ -1733,9 +1733,9 @@ const getSearchResultPage = function(page = state.search.page) {
     return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
 };
 const updateServings = function(newServings) {
-    const NumberOfServing = state.recipe.servings;
+    const oldNumberOfServing = state.recipe.servings;
     state.recipe.ingredients.forEach((ing)=>{
-        ing.quantity = ing.quantity * newServings / NumberOfServing;
+        ing.quantity = ing.quantity * newServings / oldNumberOfServing;
         //newQt=oldQt*newServings/old servings  //  2*8/4=4
         //console.log((ing.quantity * newServings) / state.recipe.servings);
         //preserve the new recipe
