@@ -37,7 +37,7 @@ export const loadRecipe = async function (id) {
       sourceUrl: recipe.source_url,
       title: recipe.title,
     };
-    //console.log(state.recipe);
+    console.log(state.recipe);
   } catch (err) {
     console.error(`${err}💥💥💥`);
     throw err; //error thrown  and hundled by the controller  then passed the message to the view for display
@@ -76,4 +76,18 @@ export const getSearchResultPage = function (page = state.search.page) {
   console.log(state.search.resultsPerPage);
   console.log(start, end);
   return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
+};
+
+export const updateServings = function (newServings) {
+  const NumberOfServing = state.recipe.servings;
+
+  state.recipe.ingredients.forEach(ing => {
+    ing.quantity = (ing.quantity * newServings) / NumberOfServing;
+    //newQt=oldQt*newServings/old servings  //  2*8/4=4
+    //console.log((ing.quantity * newServings) / state.recipe.servings);
+
+    //preserve the new recipe
+    state.recipe.servings = newServings;
+    //console.log(newServings);
+  });
 };

@@ -582,11 +582,21 @@ const controlPagination = function(gotoPage) {
     _paginationVewJsDefault.default.render(_modelJs.state.search);
     console.log(gotoPage);
 };
+//updating new serving
+const controlServing = function(newServings) {
+    //1 update the recipe servings
+    _modelJs.updateServings(newServings);
+    console.log(newServings);
+    //2,update  the recipeView;
+    _recipeViewJsDefault.default.render(_modelJs.state.recipe);
+    console.log(_modelJs.state.recipe);
+};
 //subscriber
 //event are handled in the controller and listened in the view
 //here we connect controller and view
 const init = function() {
     _recipeViewJsDefault.default.eventHandlerRender(controlRecipes); //we are handling the event in  the  controller  that comes from view
+    _recipeViewJsDefault.default.addHandlerUpdateServing(controlServing);
     _searchViewJsDefault.default.addHandlerSearch(controlSearchResults); //subscriber
     _paginationVewJsDefault.default.addHandlerClick(controlPagination);
 };
@@ -1653,6 +1663,8 @@ parcelHelpers.export(exports, "loadSearchResult", ()=>loadSearchResult
 );
 parcelHelpers.export(exports, "getSearchResultPage", ()=>getSearchResultPage
 );
+parcelHelpers.export(exports, "updateServings", ()=>updateServings
+);
 //MVC (MODEL VIEW CONTROLLER)
 /*
 MVC is an architectural pattern consisting of three parts: Model, View, Controller. 
@@ -1687,7 +1699,7 @@ const loadRecipe = async function(id) {
             sourceUrl: recipe.source_url,
             title: recipe.title
         };
-    //console.log(state.recipe);
+        console.log(state.recipe);
     } catch (err) {
         console.error(`${err}💥💥💥`);
         throw err; //error thrown  and hundled by the controller  then passed the message to the view for display
@@ -1719,6 +1731,17 @@ const getSearchResultPage = function(page = state.search.page) {
     console.log(state.search.resultsPerPage);
     console.log(start, end);
     return state.search.results.slice(start, end); //this will not include the last digit eg  (1,10); this mean    (1,9)
+};
+const updateServings = function(newServings) {
+    const NumberOfServing = state.recipe.servings;
+    state.recipe.ingredients.forEach((ing)=>{
+        ing.quantity = ing.quantity * newServings / NumberOfServing;
+        //newQt=oldQt*newServings/old servings  //  2*8/4=4
+        //console.log((ing.quantity * newServings) / state.recipe.servings);
+        //preserve the new recipe
+        state.recipe.servings = newServings;
+    //console.log(newServings);
+    });
 };
 
 },{"regenerator-runtime":"dXNgZ","./config.js":"k5Hzs","./helpers.js":"hGI1E","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dXNgZ":[function(require,module,exports) {
@@ -2401,6 +2424,19 @@ class recipeView extends _viewsJsDefault.default {
         ].forEach((ev)=>window.addEventListener(ev, handler)
         ); //the same like the above code
     }
+    addHandlerUpdateServing(handler) {
+        this._parentElement.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn--update-servings'); //event deligation
+            if (!btn) return;
+            console.log(btn);
+            //const updateTo = +btn.dataset.updateTo; //change to number with +
+            const { updateTo  } = btn.dataset;
+            //console.log(updateTo);
+            //we only get handler to update if  the number os serving greater than zero
+            if (+updateTo > 0) handler(+updateTo); //change to number with +
+            console.log(+updateTo);
+        });
+    }
     _generateMarkup() {
         return `<figure class="recipe__fig">
           <img src="${this._data.image}" alt="${this._data.title}" class="recipe__img" />
@@ -2425,12 +2461,12 @@ class recipeView extends _viewsJsDefault.default {
             <span class="recipe__info-text">servings</span>
     
             <div class="recipe__info-buttons">
-              <button class="btn--tiny btn--increase-servings">
+              <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings - 1}">
                 <svg>
                   <use href="${_iconsSvgDefault.default}#icon-minus-circle"></use>
                 </svg>
               </button>
-              <button class="btn--tiny btn--increase-servings">
+              <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings + 1}">
                 <svg>
                   <use href="${_iconsSvgDefault.default}#icon-plus-circle"></use>
                 </svg>

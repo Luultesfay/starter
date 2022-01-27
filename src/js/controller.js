@@ -71,11 +71,22 @@ const controlPagination = function (gotoPage) {
   console.log(gotoPage);
 };
 
+//updating new serving
+const controlServing = function (newServings) {
+  //1 update the recipe servings
+  model.updateServings(newServings);
+  console.log(newServings);
+
+  //2,update  the recipeView;
+  recipeView.render(model.state.recipe);
+  console.log(model.state.recipe);
+};
 //subscriber
 //event are handled in the controller and listened in the view
 //here we connect controller and view
 const init = function () {
   recipeView.eventHandlerRender(controlRecipes); //we are handling the event in  the  controller  that comes from view
+  recipeView.addHandlerUpdateServing(controlServing);
   searchView.addHandlerSearch(controlSearchResults); //subscriber
   PaginationVew.addHandlerClick(controlPagination);
 };
