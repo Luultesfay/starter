@@ -545,6 +545,8 @@ const controlRecipes = async function() {
         console.log(id);
         if (!id) return;
         _recipeViewJsDefault.default.renderSpinner();
+        //0,update results mark selected search result
+        _resultViewJsDefault.default.render(_modelJs.getSearchResultPage());
         //1,loading recipe
         await _modelJs.loadRecipe(id); // data in the model loded with this id
         //2 rendering recipe
@@ -568,7 +570,7 @@ const controlSearchResults = async function() {
         //3.render results
         //console.log(model.state.search.results);
         //resultView.render(model.state.search.results); //this give us all the result on the page
-        _resultViewJsDefault.default.render(_modelJs.getSearchResultPage(4)); //this give us part of the search result per page
+        _resultViewJsDefault.default.render(_modelJs.getSearchResultPage()); //this give us part of the search result per page
         //4 , render pagination inital buttons
         _paginationVewJsDefault.default.render(_modelJs.state.search);
     } catch (err) {
@@ -2909,8 +2911,9 @@ class ResultView extends _viewsJsDefault.default {
         return this._data.map(this._generateMarkupPreview).join(''); // we loop over the preview
     }
     _generateMarkupPreview(result) {
+        const id = window.location.hash.slice(1);
         return `<li class="preview">
-  <a class="preview__link " href="#${result.id}">
+   <a class="preview__link  ${result.id === id ? 'preview__link--active' : ''} " href="#${result.id}">
     <figure class="preview__fig">
       <img src="${result.image}" alt='${result.title}' />
     </figure>
