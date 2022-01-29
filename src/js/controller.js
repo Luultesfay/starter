@@ -6,6 +6,7 @@ import PaginationVew from './view/paginationVew.js';
 
 import 'core-js/stable'; //this is for polyfiling evrything
 import 'regenerator-runtime/runtime'; //this is for polyfiling async/await
+import { async } from 'regenerator-runtime';
 //this hot module prevent the page from loading whwn ever we change the code but if we remove the hot module  it will load when ever we change codes
 // if (module.hot) {
 //   module.hot.accept();
@@ -27,9 +28,10 @@ const controlRecipes = async function () {
 
     recipeView.renderSpinner();
 
-    //0,update results mark selected search result
+    // 0) Update results view to mark selected search result
+    resultView.update(model.getSearchResultPage());
 
-    resultView.render(model.getSearchResultPage());
+    //resultView.render(model.getSearchResultPage()); //to be deleted
 
     //1,loading recipe
 
@@ -83,7 +85,18 @@ const controlServing = function (newServings) {
   console.log(newServings);
 
   //2,update  the recipeView;
-  recipeView.render(model.state.recipe);
+
+  recipeView.update(model.state.recipe);
+  //recipeView.render(model.state.recipe); // to be deleted
+  console.log(model.state.recipe);
+};
+
+const controlAddBookMark = function () {
+  if (!model.state.recipe.bookmarked) model.addBookMark(model.state.recipe);
+  else model.deleteBookMark(model.state.recipe.id);
+  // Update the recipe view
+  recipeView.update(model.state.recipe);
+  //recipeView.render(model.state.recipe); //to be deleted
   console.log(model.state.recipe);
 };
 //subscriber
@@ -92,6 +105,7 @@ const controlServing = function (newServings) {
 const init = function () {
   recipeView.eventHandlerRender(controlRecipes); //we are handling the event in  the  controller  that comes from view
   recipeView.addHandlerUpdateServing(controlServing);
+  recipeView.addHandlerAddBookMark(controlAddBookMark);
   searchView.addHandlerSearch(controlSearchResults); //subscriber
   PaginationVew.addHandlerClick(controlPagination);
 };
