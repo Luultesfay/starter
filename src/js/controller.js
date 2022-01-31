@@ -3,10 +3,12 @@ import recipeView from './view/recipeView.js';
 import searchView from './view/searchView.js';
 import resultView from './view/resultView.js';
 import PaginationVew from './view/paginationVew.js';
+import bookMarkView from './view/bookMarkView.js';
 
 import 'core-js/stable'; //this is for polyfiling evrything
 import 'regenerator-runtime/runtime'; //this is for polyfiling async/await
 import { async } from 'regenerator-runtime';
+
 //this hot module prevent the page from loading whwn ever we change the code but if we remove the hot module  it will load when ever we change codes
 // if (module.hot) {
 //   module.hot.accept();
@@ -30,6 +32,8 @@ const controlRecipes = async function () {
 
     // 0) Update results view to mark selected search result
     resultView.update(model.getSearchResultPage());
+    //updates the highlight to the selected book marked recipe
+    bookMarkView.update(model.state.bookmarks);
 
     //resultView.render(model.getSearchResultPage()); //to be deleted
 
@@ -87,17 +91,18 @@ const controlServing = function (newServings) {
   //2,update  the recipeView;
 
   recipeView.update(model.state.recipe);
-  //recipeView.render(model.state.recipe); // to be deleted
+
   console.log(model.state.recipe);
 };
 
 const controlAddBookMark = function () {
+  //1 add/remove bookmarks
   if (!model.state.recipe.bookmarked) model.addBookMark(model.state.recipe);
   else model.deleteBookMark(model.state.recipe.id);
-  // Update the recipe view
+  // 2,Update the recipe view
   recipeView.update(model.state.recipe);
-  //recipeView.render(model.state.recipe); //to be deleted
-  console.log(model.state.recipe);
+  //3, render bookmark
+  bookMarkView.render(model.state.bookmarks);
 };
 //subscriber
 //event are handled in the controller and listened in the view
