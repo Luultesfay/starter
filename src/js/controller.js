@@ -104,6 +104,11 @@ const controlAddBookMark = function () {
   //3, render bookmark
   bookMarkView.render(model.state.bookmarks);
 };
+
+const controlBookMark = function () {
+  bookMarkView.render(model.state.bookmarks);
+};
+
 //subscriber
 //event are handled in the controller and listened in the view
 //here we connect controller and view
@@ -113,5 +118,6 @@ const init = function () {
   recipeView.addHandlerAddBookMark(controlAddBookMark);
   searchView.addHandlerSearch(controlSearchResults); //subscriber
   PaginationVew.addHandlerClick(controlPagination);
+  bookMarkView.addHandlerRender(controlBookMark);
 };
 init();

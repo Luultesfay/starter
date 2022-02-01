@@ -6,6 +6,9 @@ class bookMarkView extends views {
     'there is no recipe bookmarked, find a nice recipe to bookmarked';
   _message = '';
 
+  addHandlerRender(handler) {
+    window.addEventListener('load', handler);
+  }
   _generateMarkup() {
     console.log(this._data);
     return this._data.map(this._generateMarkupPreview).join(''); // we loop over the preview

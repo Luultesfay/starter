@@ -103,6 +103,12 @@ export const updateServings = function (newServings) {
   });
 };
 
+//ADD THE BOOKMARKS TO THE LOCAL STORAGE
+
+const persistentBkMarkWlocalStorage = function () {
+  localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks)); //stringify() method converts a JavaScript object or value to a JSON string,
+};
+
 //to add a recipe as book marked
 //note  if we need to book mark a recipe we need the entire data of the recipe to delete it only we need to pass the id
 export const addBookMark = function (recipe) {
@@ -113,6 +119,7 @@ export const addBookMark = function (recipe) {
   // mark current RECIPE as book mark
 
   if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+  persistentBkMarkWlocalStorage();
 };
 
 // to unmark  the recipe from bookmark or to delete the recipe as marked
@@ -123,4 +130,14 @@ export const deleteBookMark = function (id) {
 
   //MARK CURRENT RECIPE AS  NOT MARKED
   if (id === state.recipe.id) state.recipe.bookmarked = false;
+  persistentBkMarkWlocalStorage();
 };
+
+//GET THE BOOKMARK DATA FROM THE LOCAL STORAGE AND CHANGE IT TO OBJECT
+
+const init = function () {
+  const storage = localStorage.getItem('bookmarks'); //we get the bookmaked recipe from local storage
+  if (storage) state.bookmarks = JSON.parse(storage); //Parse the data with JSON.parse() , and the data becomes a JavaScript object.
+};
+init();
+console.log(state.bookmarks);
