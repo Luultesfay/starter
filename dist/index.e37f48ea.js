@@ -532,6 +532,8 @@ var _paginationVewJs = require("./view/paginationVew.js");
 var _paginationVewJsDefault = parcelHelpers.interopDefault(_paginationVewJs);
 var _bookMarkViewJs = require("./view/bookMarkView.js");
 var _bookMarkViewJsDefault = parcelHelpers.interopDefault(_bookMarkViewJs);
+var _addRecipeViewJs = require("./view/addRecipeView.js");
+var _addRecipeViewJsDefault = parcelHelpers.interopDefault(_addRecipeViewJs);
 var _runtime = require("regenerator-runtime/runtime"); //this is for polyfiling async/await
 var _regeneratorRuntime = require("regenerator-runtime");
 //this hot module prevent the page from loading whwn ever we change the code but if we remove the hot module  it will load when ever we change codes
@@ -611,6 +613,9 @@ const controlAddBookMark = function() {
 const controlBookMark = function() {
     _bookMarkViewJsDefault.default.render(_modelJs.state.bookmarks);
 };
+const controlAddRecipe = function(newRecipe) {
+    console.log(newRecipe);
+};
 //subscriber
 //event are handled in the controller and listened in the view
 //here we connect controller and view
@@ -621,10 +626,11 @@ const init = function() {
     _searchViewJsDefault.default.addHandlerSearch(controlSearchResults); //subscriber
     _paginationVewJsDefault.default.addHandlerClick(controlPagination);
     _bookMarkViewJsDefault.default.addHandlerRender(controlBookMark);
+    _addRecipeViewJsDefault.default.addHandlerUpload(controlAddRecipe);
 };
 init();
 
-},{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./view/searchView.js":"blwqv","./view/resultView.js":"i3HJw","./view/paginationVew.js":"6rdvz","./view/bookMarkView.js":"4oW7p","regenerator-runtime":"dXNgZ"}],"49tUX":[function(require,module,exports) {
+},{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./view/searchView.js":"blwqv","./view/resultView.js":"i3HJw","./view/paginationVew.js":"6rdvz","./view/bookMarkView.js":"4oW7p","regenerator-runtime":"dXNgZ","./view/addRecipeView.js":"bxpSm"}],"49tUX":[function(require,module,exports) {
 var $ = require('../internals/export');
 var global = require('../internals/global');
 var task = require('../internals/task');
@@ -1798,7 +1804,8 @@ const deleteBookMark = function(id) {
     if (id === state.recipe.id) state.recipe.bookmarked = false;
     persistentBkMarkWlocalStorage();
 };
-//GET THE BOOKMARK DATA FROM THE LOCAL STORAGE AND CHANGE IT TO OBJECT
+//GET THE BOOKMARK DATA FROM THE LOCAL STORAGE AND CHANGE IT TO OBJECT  AND RETAIN THE PREVIOUS BOOKMARK  OF THE PAGE
+//AFTER LOADING THE PAGE
 const init = function() {
     const storage = localStorage.getItem('bookmarks'); //we get the bookmaked recipe from local storage
     if (storage) state.bookmarks = JSON.parse(storage); //Parse the data with JSON.parse() , and the data becomes a JavaScript object.
@@ -3138,6 +3145,54 @@ PreviewView keeps both _generateMarkup() and _generateMarkupPreview() while book
  //   _message = '';
  // }
  // export default new bookMarkView();
+
+},{"./views.js":"ez8yY","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bxpSm":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewsJs = require("./views.js");
+var _viewsJsDefault = parcelHelpers.interopDefault(_viewsJs);
+var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class AddRecipeView extends _viewsJsDefault.default {
+    _parentElement = document.querySelector('.upload');
+    _window = document.querySelector('.add-recipe-window');
+    _overlay = document.querySelector('.overlay');
+    _btnOpen = document.querySelector('.nav__btn--add-recipe');
+    _btnClose = document.querySelector('.btn--close-modal');
+    constructor(){
+        super();
+        this._addHandlerShowWindow(); //_ indicate  the method is protected
+        this._addHandlerCloseWindow();
+    }
+    toggleWindow() {
+        this._overlay.classList.toggle('hidden'); //If force is not given, "toggles" token, removing it if it's present and adding it if it's not present
+        this._window.classList.toggle('hidden');
+    }
+    _addHandlerShowWindow() {
+        this._btnOpen.addEventListener('click', this.toggleWindow.bind(this)); //  (this)  in the braket points to the object not to the btnOpen
+    }
+    _addHandlerCloseWindow() {
+        this._btnClose.addEventListener('click', this.toggleWindow.bind(this));
+        this._overlay.addEventListener('click', this.toggleWindow.bind(this));
+    }
+    //uploding form or submmision form
+    addHandlerUpload(handler) {
+        this._parentElement.addEventListener('submit', function(e) {
+            e.preventDefault();
+            //to get the value from the form we need special data collector method from form which is FormData();
+            // the data is the one which we want to send or publish to the API
+            const dataArr = [
+                ...new FormData(this)
+            ]; //this here is points to the parent element
+            const data = Object.fromEntries(dataArr); //fromEntries is a method take an array of entris and change them to object entries
+            // console.log(this);
+            handler(data);
+        });
+    }
+    _generateMarkup() {
+    }
+}
+exports.default = new AddRecipeView();
 
 },{"./views.js":"ez8yY","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["ddCAb","aenu9"], "aenu9", "parcelRequire7e89")
 

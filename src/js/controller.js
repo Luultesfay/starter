@@ -4,10 +4,12 @@ import searchView from './view/searchView.js';
 import resultView from './view/resultView.js';
 import PaginationVew from './view/paginationVew.js';
 import bookMarkView from './view/bookMarkView.js';
+import AddRecipeView from './view/addRecipeView.js';
 
 import 'core-js/stable'; //this is for polyfiling evrything
 import 'regenerator-runtime/runtime'; //this is for polyfiling async/await
 import { async } from 'regenerator-runtime';
+import addRecipeView from './view/addRecipeView.js';
 
 //this hot module prevent the page from loading whwn ever we change the code but if we remove the hot module  it will load when ever we change codes
 // if (module.hot) {
@@ -109,6 +111,10 @@ const controlBookMark = function () {
   bookMarkView.render(model.state.bookmarks);
 };
 
+const controlAddRecipe = function (newRecipe) {
+  console.log(newRecipe);
+};
+
 //subscriber
 //event are handled in the controller and listened in the view
 //here we connect controller and view
@@ -119,5 +125,6 @@ const init = function () {
   searchView.addHandlerSearch(controlSearchResults); //subscriber
   PaginationVew.addHandlerClick(controlPagination);
   bookMarkView.addHandlerRender(controlBookMark);
+  AddRecipeView.addHandlerUpload(controlAddRecipe);
 };
 init();

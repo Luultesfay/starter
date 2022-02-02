@@ -133,7 +133,8 @@ export const deleteBookMark = function (id) {
   persistentBkMarkWlocalStorage();
 };
 
-//GET THE BOOKMARK DATA FROM THE LOCAL STORAGE AND CHANGE IT TO OBJECT
+//GET THE BOOKMARK DATA FROM THE LOCAL STORAGE AND CHANGE IT TO OBJECT  AND RETAIN THE PREVIOUS BOOKMARK  OF THE PAGE
+//AFTER LOADING THE PAGE
 
 const init = function () {
   const storage = localStorage.getItem('bookmarks'); //we get the bookmaked recipe from local storage
