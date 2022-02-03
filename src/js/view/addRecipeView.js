@@ -3,6 +3,8 @@ import views from './views.js';
 import icons from 'url:../../img/icons.svg'; //parcel2
 class AddRecipeView extends views {
   _parentElement = document.querySelector('.upload');
+
+  _message = 'you are uploded new recipe succesfully congrats 😄';
   _window = document.querySelector('.add-recipe-window');
   _overlay = document.querySelector('.overlay');
   _btnOpen = document.querySelector('.nav__btn--add-recipe');
@@ -32,7 +34,7 @@ class AddRecipeView extends views {
     this._parentElement.addEventListener('submit', function (e) {
       e.preventDefault();
 
-      //to get the value from the form we need special data collector method from form which is FormData();
+      //to get the value from the form we need special data collector method  which is FormData();
       // the data is the one which we want to send or publish to the API
       const dataArr = [...new FormData(this)]; //this here is points to the parent element
       const data = Object.fromEntries(dataArr); //fromEntries is a method take an array of entris and change them to object entries

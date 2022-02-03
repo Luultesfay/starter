@@ -613,8 +613,25 @@ const controlAddBookMark = function() {
 const controlBookMark = function() {
     _bookMarkViewJsDefault.default.render(_modelJs.state.bookmarks);
 };
-const controlAddRecipe = function(newRecipe) {
-    console.log(newRecipe);
+const controlAddRecipe = async function(newRecipe) {
+    try {
+        //show spinner
+        _addRecipeViewJsDefault.default.renderSpinner();
+        //uplode new recipe data
+        await _modelJs.uploadRecipe(newRecipe);
+        console.log(_modelJs.state.recipe);
+        //render the newly added recipe
+        _recipeViewJsDefault.default.render(_modelJs.state.recipe);
+        //sucess message
+        _addRecipeViewJsDefault.default.renderMessage();
+        //close window form
+        setTimeout(function() {
+        //addRecipeView.toggleWindow(); //we close the window with the toggle message  and then print sucess message  after certain sec;
+        }, 2500);
+    } catch (err) {
+        //console.log(err);
+        _addRecipeViewJsDefault.default.renderError(err.message);
+    }
 };
 //subscriber
 //event are handled in the controller and listened in the view
@@ -1697,6 +1714,8 @@ parcelHelpers.export(exports, "addBookMark", ()=>addBookMark
 );
 parcelHelpers.export(exports, "deleteBookMark", ()=>deleteBookMark
 );
+parcelHelpers.export(exports, "uploadRecipe", ()=>uploadRecipe
+);
 //MVC (MODEL VIEW CONTROLLER)
 /*
 MVC is an architectural pattern consisting of three parts: Model, View, Controller. 
@@ -1719,20 +1738,27 @@ const state = {
     },
     bookmarks: []
 };
+const createRecipeObject = function(data) {
+    const { recipe  } = data.data;
+    return {
+        id: recipe.id,
+        cookingTime: recipe.cooking_time,
+        image: recipe.image_url,
+        ingredients: recipe.ingredients,
+        publisher: recipe.publisher,
+        servings: recipe.servings,
+        sourceUrl: recipe.source_url,
+        title: recipe.title,
+        //this is condtionally add propertity to object
+        ...recipe.key && {
+            key: recipe.key
+        }
+    };
+};
 const loadRecipe = async function(id) {
     try {
         const data = await _helpersJs.getJSON(`${_configJs.API_URL}${id}`);
-        const { recipe  } = data.data;
-        state.recipe = {
-            id: recipe.id,
-            cookingTime: recipe.cooking_time,
-            image: recipe.image_url,
-            ingredients: recipe.ingredients,
-            publisher: recipe.publisher,
-            servings: recipe.servings,
-            sourceUrl: recipe.source_url,
-            title: recipe.title
-        };
+        state.recipe = createRecipeObject(data);
         //this checks if the the  coming recipe is  bookmarked or not  earler  ,
         // then if it is there in the book marked  then we set that coming recipe is set to true
         // this is looping over the array of bookmarked recipe id   then compired it with the recipe id of the coming one
@@ -1812,6 +1838,40 @@ const init = function() {
 };
 init();
 console.log(state.bookmarks);
+const uploadRecipe = async function(newRecipe) {
+    //console.log(Object.entries(newRecipe)); //entries() change objects to array  its oppsit to  Fromentries() method
+    try {
+        const ingredients = Object.entries(newRecipe).filter((entry)=>entry[0].startsWith('ingredient') && entry[1] !== ''
+        ).map((ing)=>{
+            const ingArr = ing[1].replaceAll(' ', '') //replacing all white spaces
+            .split(','); //and split with ','
+            if (ingArr.length !== 3) throw new Error('wrong ingrident format! please use the correct format');
+            const [quantity, unit, description] = ingArr;
+            return {
+                quantity: quantity ? +quantity : null,
+                unit,
+                description
+            };
+        });
+        //the new recipe to send to the server
+        const recipe = {
+            title: newRecipe.title,
+            servings: +newRecipe.servings,
+            //description: newRecipe.descripiton,
+            image_url: newRecipe.image,
+            publisher: newRecipe.publisher,
+            cooking_time: +newRecipe.cookingTime,
+            source_url: newRecipe.sourceUrl,
+            ingredients
+        };
+        //console.log(recipe);
+        const data = await _helpersJs.sendJSON(`${_configJs.API_URL}?key=${_configJs.KEY}`, recipe); //https://forkify-api.herokuapp.com/api/v2/recipes/?key='ef5dfcdb-2435-4704-99d4-55059527185f',recipe;
+        state.recipe = createRecipeObject(data);
+        addBookMark(state.recipe);
+    } catch (err) {
+        throw err;
+    }
+};
 
 },{"regenerator-runtime":"dXNgZ","./config.js":"k5Hzs","./helpers.js":"hGI1E","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dXNgZ":[function(require,module,exports) {
 /**
@@ -2400,8 +2460,11 @@ parcelHelpers.export(exports, "API_URL", ()=>API_URL
 );
 parcelHelpers.export(exports, "TIME_OUT", ()=>TIME_OUT
 );
+parcelHelpers.export(exports, "KEY", ()=>KEY
+);
 const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
-const TIME_OUT = 10; //export const RES_PER_PAGE = 10;
+const TIME_OUT = 10;
+const KEY = 'ef5dfcdb-2435-4704-99d4-55059527185f'; //export const RES_PER_PAGE = 10;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -2438,6 +2501,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getJSON", ()=>getJSON
 );
+parcelHelpers.export(exports, "sendJSON", ()=>sendJSON
+);
 //we put functions  here in order to  uses  them repeatedly in all our program
 //this time out function uses to timeout the program if the promise took too long
 var _configJs = require("./config.js");
@@ -2451,6 +2516,29 @@ const timeout = function(s) {
 const getJSON = async function(url) {
     try {
         const fetchPro = fetch(url);
+        const res = await Promise.race([
+            fetchPro,
+            timeout(_configJs.TIME_OUT)
+        ]); //we race the promise with timeout after certain second, the winner then displayed
+        const data = await res.json();
+        //console.log(res, data);
+        if (!res.ok) throw new Error(`${data.message}(${res.status})`); //we throw our own error
+        //lets format the property of the recipe
+        return data;
+    } catch (err) {
+        throw err;
+    }
+};
+const sendJSON = async function(url, uploadData) {
+    try {
+        const fetchPro = fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            //Convert a JavaScript object into a string with JSON.stringify().
+            body: JSON.stringify(uploadData)
+        });
         const res = await Promise.race([
             fetchPro,
             timeout(_configJs.TIME_OUT)
@@ -2958,6 +3046,20 @@ class views {
         this._clear();
         this._parentElement.insertAdjacentHTML('afterbegin', markup);
     }
+    renderMessage(message = this._message) {
+        const markup = `
+      <div class="message">
+        <div>
+          <svg>
+            <use href="${_iconsSvgDefault.default}#icon-smile"></use>
+          </svg>
+        </div>
+        <p>${message}</p>
+      </div>
+    `;
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
 }
 exports.default = views;
 
@@ -3155,6 +3257,7 @@ var _iconsSvg = require("url:../../img/icons.svg"); //parcel2
 var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class AddRecipeView extends _viewsJsDefault.default {
     _parentElement = document.querySelector('.upload');
+    _message = 'you are uploded new recipe succesfully congrats 😄';
     _window = document.querySelector('.add-recipe-window');
     _overlay = document.querySelector('.overlay');
     _btnOpen = document.querySelector('.nav__btn--add-recipe');
@@ -3179,7 +3282,7 @@ class AddRecipeView extends _viewsJsDefault.default {
     addHandlerUpload(handler) {
         this._parentElement.addEventListener('submit', function(e) {
             e.preventDefault();
-            //to get the value from the form we need special data collector method from form which is FormData();
+            //to get the value from the form we need special data collector method  which is FormData();
             // the data is the one which we want to send or publish to the API
             const dataArr = [
                 ...new FormData(this)

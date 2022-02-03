@@ -111,8 +111,30 @@ const controlBookMark = function () {
   bookMarkView.render(model.state.bookmarks);
 };
 
-const controlAddRecipe = function (newRecipe) {
-  console.log(newRecipe);
+const controlAddRecipe = async function (newRecipe) {
+  try {
+    //show spinner
+
+    addRecipeView.renderSpinner();
+    //uplode new recipe data
+    await model.uploadRecipe(newRecipe);
+    console.log(model.state.recipe);
+
+    //render the newly added recipe
+    recipeView.render(model.state.recipe);
+
+    //sucess message
+
+    addRecipeView.renderMessage();
+
+    //close window form
+    setTimeout(function () {
+      //addRecipeView.toggleWindow(); //we close the window with the toggle message  and then print sucess message  after certain sec;
+    }, 2500);
+  } catch (err) {
+    //console.log(err);
+    addRecipeView.renderError(err.message);
+  }
 };
 
 //subscriber

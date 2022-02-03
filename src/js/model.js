@@ -8,9 +8,9 @@ MVC is an architectural pattern consisting of three parts: Model, View, Controll
 //HERE WE WILL REFACTOR THE  MODEL
 
 import { async } from 'regenerator-runtime';
-import { API_URL } from './config.js';
+import { API_URL, KEY } from './config.js';
 //import { RES_PER_PAGE } from './config.js';
-import { getJSON } from './helpers.js';
+import { getJSON, sendJSON } from './helpers.js';
 export const state = {
   recipe: {},
   search: {
@@ -22,22 +22,27 @@ export const state = {
   bookmarks: [],
 };
 
+const createRecipeObject = function (data) {
+  const { recipe } = data.data;
+  return {
+    id: recipe.id,
+    cookingTime: recipe.cooking_time,
+    image: recipe.image_url,
+    ingredients: recipe.ingredients,
+    publisher: recipe.publisher,
+    servings: recipe.servings,
+    sourceUrl: recipe.source_url,
+    title: recipe.title,
+    //this is condtionally add propertity to object
+    ...(recipe.key && { key: recipe.key }), //if recipe.key is true then   key:recipe.key,  else there is no key to return
+  };
+};
 //this function is responsible for fecthing  data from forkfy Api
 export const loadRecipe = async function (id) {
   try {
     const data = await getJSON(`${API_URL}${id}`);
+    state.recipe = createRecipeObject(data);
 
-    const { recipe } = data.data;
-    state.recipe = {
-      id: recipe.id,
-      cookingTime: recipe.cooking_time,
-      image: recipe.image_url,
-      ingredients: recipe.ingredients,
-      publisher: recipe.publisher,
-      servings: recipe.servings,
-      sourceUrl: recipe.source_url,
-      title: recipe.title,
-    };
     //this checks if the the  coming recipe is  bookmarked or not  earler  ,
     // then if it is there in the book marked  then we set that coming recipe is set to true
 
@@ -142,3 +147,47 @@ const init = function () {
 };
 init();
 console.log(state.bookmarks);
+
+//we are formatting the new recipe data that we want to publish to the forkify api
+
+//we are accepting new recipe then we change to array using Object.entrie()method
+//  then fillter the first entry starttwith ingrident and the secound entry should be  non empty
+//and looping over the array and destructure them to the 3 type,
+export const uploadRecipe = async function (newRecipe) {
+  //console.log(Object.entries(newRecipe)); //entries() change objects to array  its oppsit to  Fromentries() method
+  try {
+    const ingredients = Object.entries(newRecipe)
+      .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
+      .map(ing => {
+        const ingArr = ing[1]
+          .replaceAll(' ', '') //replacing all white spaces
+          .split(','); //and split with ','
+
+        if (ingArr.length !== 3)
+          throw new Error(
+            'wrong ingrident format! please use the correct format'
+          );
+        const [quantity, unit, description] = ingArr;
+        return { quantity: quantity ? +quantity : null, unit, description };
+      });
+
+    //the new recipe to send to the server
+    const recipe = {
+      title: newRecipe.title,
+      servings: +newRecipe.servings,
+      //description: newRecipe.descripiton,
+      image_url: newRecipe.image,
+      publisher: newRecipe.publisher,
+      cooking_time: +newRecipe.cookingTime,
+      source_url: newRecipe.sourceUrl,
+      ingredients,
+    };
+    //console.log(recipe);
+    const data = await sendJSON(`${API_URL}?key=${KEY}`, recipe); //https://forkify-api.herokuapp.com/api/v2/recipes/?key='ef5dfcdb-2435-4704-99d4-55059527185f',recipe;
+
+    state.recipe = createRecipeObject(data);
+    addBookMark(state.recipe);
+  } catch (err) {
+    throw err;
+  }
+};
