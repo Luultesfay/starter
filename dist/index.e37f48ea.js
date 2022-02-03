@@ -534,6 +534,7 @@ var _bookMarkViewJs = require("./view/bookMarkView.js");
 var _bookMarkViewJsDefault = parcelHelpers.interopDefault(_bookMarkViewJs);
 var _addRecipeViewJs = require("./view/addRecipeView.js");
 var _addRecipeViewJsDefault = parcelHelpers.interopDefault(_addRecipeViewJs);
+var _config = require("./config");
 var _runtime = require("regenerator-runtime/runtime"); //this is for polyfiling async/await
 var _regeneratorRuntime = require("regenerator-runtime");
 //this hot module prevent the page from loading whwn ever we change the code but if we remove the hot module  it will load when ever we change codes
@@ -626,12 +627,16 @@ const controlAddRecipe = async function(newRecipe) {
         _addRecipeViewJsDefault.default.renderMessage();
         //close window form
         setTimeout(function() {
-        //addRecipeView.toggleWindow(); //we close the window with the toggle message  and then print sucess message  after certain sec;
-        }, 2500);
+            _addRecipeViewJsDefault.default.toggleWindow(); //we close the window with the toggle message  and then print sucess message  after certain sec;
+        }, _config.MODEL_CLOSE_SEC * 1000);
     } catch (err) {
         //console.log(err);
         _addRecipeViewJsDefault.default.renderError(err.message);
     }
+    //If you try adding a recipe without reloading the page after having added another recipe, the form is gone. so the solution is to use location.reload();
+    setTimeout(function() {
+        location.reload();
+    }, 1500); // solution is load every time you uplode the recipe
 };
 //subscriber
 //event are handled in the controller and listened in the view
@@ -647,7 +652,7 @@ const init = function() {
 };
 init();
 
-},{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./view/searchView.js":"blwqv","./view/resultView.js":"i3HJw","./view/paginationVew.js":"6rdvz","./view/bookMarkView.js":"4oW7p","regenerator-runtime":"dXNgZ","./view/addRecipeView.js":"bxpSm"}],"49tUX":[function(require,module,exports) {
+},{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./view/searchView.js":"blwqv","./view/resultView.js":"i3HJw","./view/paginationVew.js":"6rdvz","./view/bookMarkView.js":"4oW7p","regenerator-runtime":"dXNgZ","./view/addRecipeView.js":"bxpSm","./config":"k5Hzs"}],"49tUX":[function(require,module,exports) {
 var $ = require('../internals/export');
 var global = require('../internals/global');
 var task = require('../internals/task');
@@ -2462,9 +2467,12 @@ parcelHelpers.export(exports, "TIME_OUT", ()=>TIME_OUT
 );
 parcelHelpers.export(exports, "KEY", ()=>KEY
 );
+parcelHelpers.export(exports, "MODEL_CLOSE_SEC", ()=>MODEL_CLOSE_SEC
+);
 const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
 const TIME_OUT = 10;
-const KEY = 'ef5dfcdb-2435-4704-99d4-55059527185f'; //export const RES_PER_PAGE = 10;
+const KEY = 'ef5dfcdb-2435-4704-99d4-55059527185f';
+const MODEL_CLOSE_SEC = 2.5; //export const RES_PER_PAGE = 10;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {

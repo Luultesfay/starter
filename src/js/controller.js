@@ -5,6 +5,7 @@ import resultView from './view/resultView.js';
 import PaginationVew from './view/paginationVew.js';
 import bookMarkView from './view/bookMarkView.js';
 import AddRecipeView from './view/addRecipeView.js';
+import { MODEL_CLOSE_SEC } from './config';
 
 import 'core-js/stable'; //this is for polyfiling evrything
 import 'regenerator-runtime/runtime'; //this is for polyfiling async/await
@@ -129,12 +130,16 @@ const controlAddRecipe = async function (newRecipe) {
 
     //close window form
     setTimeout(function () {
-      //addRecipeView.toggleWindow(); //we close the window with the toggle message  and then print sucess message  after certain sec;
-    }, 2500);
+      addRecipeView.toggleWindow(); //we close the window with the toggle message  and then print sucess message  after certain sec;
+    }, MODEL_CLOSE_SEC * 1000);
   } catch (err) {
     //console.log(err);
     addRecipeView.renderError(err.message);
   }
+  //If you try adding a recipe without reloading the page after having added another recipe, the form is gone. so the solution is to use location.reload();
+  setTimeout(function () {
+    location.reload();
+  }, 1500); // solution is load every time you uplode the recipe
 };
 
 //subscriber
