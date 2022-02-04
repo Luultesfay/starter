@@ -127,6 +127,12 @@ const controlAddRecipe = async function (newRecipe) {
     //sucess message
 
     addRecipeView.renderMessage();
+    //render bookmark
+    bookMarkView.render(model.state.bookmarks);
+
+    //change id in url
+    //history is a browther API
+    window.history.pushState(null, '', `#${model.state.recipe.id}`); //pushstate() method helps us to change the url with out reloding the page
 
     //close window form
     setTimeout(function () {
@@ -137,9 +143,10 @@ const controlAddRecipe = async function (newRecipe) {
     addRecipeView.renderError(err.message);
   }
   //If you try adding a recipe without reloading the page after having added another recipe, the form is gone. so the solution is to use location.reload();
-  setTimeout(function () {
-    location.reload();
-  }, 1500); // solution is load every time you uplode the recipe
+
+  //setTimeout(function () {
+  //location.reload();
+  //}, 5000); // solution is load every time you uplode the recipe
 };
 
 //subscriber

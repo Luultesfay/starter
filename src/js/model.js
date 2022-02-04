@@ -10,7 +10,8 @@ MVC is an architectural pattern consisting of three parts: Model, View, Controll
 import { async } from 'regenerator-runtime';
 import { API_URL, KEY } from './config.js';
 //import { RES_PER_PAGE } from './config.js';
-import { getJSON, sendJSON } from './helpers.js';
+//import { getJSON, sendJSON } from './helpers.js';
+import { AJAX } from './helpers.js';
 export const state = {
   recipe: {},
   search: {
@@ -40,7 +41,8 @@ const createRecipeObject = function (data) {
 //this function is responsible for fecthing  data from forkfy Api
 export const loadRecipe = async function (id) {
   try {
-    const data = await getJSON(`${API_URL}${id}`);
+    //const data = await getJSON(`${API_URL}${id}`);//get getJSON is now changed by AJAX becouse we refactored in the helper.js by AJAX
+    const data = await AJAX(`${API_URL}${id}?key=${KEY}`); //getJSON is now changed by AJAX becouse we refactored in the helper.js by AJAX
     state.recipe = createRecipeObject(data);
 
     //this checks if the the  coming recipe is  bookmarked or not  earler  ,
@@ -64,7 +66,8 @@ export const loadRecipe = async function (id) {
 export const loadSearchResult = async function (query) {
   try {
     state.search.query = query;
-    const data = await getJSON(`${API_URL}?search=${query}`);
+    //const data = await getJSON(`${API_URL}?search=${query}`);
+    const data = await AJAX(`${API_URL}?search=${query}&?key=${KEY}`);
     console.log(data);
     state.search.results = data.data.recipes.map(rec => {
       return {
@@ -183,7 +186,8 @@ export const uploadRecipe = async function (newRecipe) {
       ingredients,
     };
     //console.log(recipe);
-    const data = await sendJSON(`${API_URL}?key=${KEY}`, recipe); //https://forkify-api.herokuapp.com/api/v2/recipes/?key='ef5dfcdb-2435-4704-99d4-55059527185f',recipe;
+    //AJAX REPLACE sendJSON
+    const data = await AJAX(`${API_URL}?key=${KEY}`, recipe); //https://forkify-api.herokuapp.com/api/v2/recipes/?key='ef5dfcdb-2435-4704-99d4-55059527185f',recipe;
 
     state.recipe = createRecipeObject(data);
     addBookMark(state.recipe);

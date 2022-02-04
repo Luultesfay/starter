@@ -625,6 +625,11 @@ const controlAddRecipe = async function(newRecipe) {
         _recipeViewJsDefault.default.render(_modelJs.state.recipe);
         //sucess message
         _addRecipeViewJsDefault.default.renderMessage();
+        //render bookmark
+        _bookMarkViewJsDefault.default.render(_modelJs.state.bookmarks);
+        //change id in url
+        //history is a browther API
+        window.history.pushState(null, '', `#${_modelJs.state.recipe.id}`); //pushstate() method helps us to change the url with out reloding the page
         //close window form
         setTimeout(function() {
             _addRecipeViewJsDefault.default.toggleWindow(); //we close the window with the toggle message  and then print sucess message  after certain sec;
@@ -633,10 +638,10 @@ const controlAddRecipe = async function(newRecipe) {
         //console.log(err);
         _addRecipeViewJsDefault.default.renderError(err.message);
     }
-    //If you try adding a recipe without reloading the page after having added another recipe, the form is gone. so the solution is to use location.reload();
-    setTimeout(function() {
-        location.reload();
-    }, 1500); // solution is load every time you uplode the recipe
+//If you try adding a recipe without reloading the page after having added another recipe, the form is gone. so the solution is to use location.reload();
+//setTimeout(function () {
+//location.reload();
+//}, 5000); // solution is load every time you uplode the recipe
 };
 //subscriber
 //event are handled in the controller and listened in the view
@@ -1731,6 +1736,7 @@ MVC is an architectural pattern consisting of three parts: Model, View, Controll
 var _regeneratorRuntime = require("regenerator-runtime");
 var _configJs = require("./config.js");
 //import { RES_PER_PAGE } from './config.js';
+//import { getJSON, sendJSON } from './helpers.js';
 var _helpersJs = require("./helpers.js");
 const state = {
     recipe: {
@@ -1762,7 +1768,8 @@ const createRecipeObject = function(data) {
 };
 const loadRecipe = async function(id) {
     try {
-        const data = await _helpersJs.getJSON(`${_configJs.API_URL}${id}`);
+        //const data = await getJSON(`${API_URL}${id}`);//get getJSON is now changed by AJAX becouse we refactored in the helper.js by AJAX
+        const data = await _helpersJs.AJAX(`${_configJs.API_URL}${id}?key=${_configJs.KEY}`); //getJSON is now changed by AJAX becouse we refactored in the helper.js by AJAX
         state.recipe = createRecipeObject(data);
         //this checks if the the  coming recipe is  bookmarked or not  earler  ,
         // then if it is there in the book marked  then we set that coming recipe is set to true
@@ -1780,7 +1787,8 @@ const loadRecipe = async function(id) {
 const loadSearchResult = async function(query) {
     try {
         state.search.query = query;
-        const data = await _helpersJs.getJSON(`${_configJs.API_URL}?search=${query}`);
+        //const data = await getJSON(`${API_URL}?search=${query}`);
+        const data = await _helpersJs.AJAX(`${_configJs.API_URL}?search=${query}&?key=${_configJs.KEY}`);
         console.log(data);
         state.search.results = data.data.recipes.map((rec)=>{
             return {
@@ -1870,7 +1878,8 @@ const uploadRecipe = async function(newRecipe) {
             ingredients
         };
         //console.log(recipe);
-        const data = await _helpersJs.sendJSON(`${_configJs.API_URL}?key=${_configJs.KEY}`, recipe); //https://forkify-api.herokuapp.com/api/v2/recipes/?key='ef5dfcdb-2435-4704-99d4-55059527185f',recipe;
+        //AJAX REPLACE sendJSON
+        const data = await _helpersJs.AJAX(`${_configJs.API_URL}?key=${_configJs.KEY}`, recipe); //https://forkify-api.herokuapp.com/api/v2/recipes/?key='ef5dfcdb-2435-4704-99d4-55059527185f',recipe;
         state.recipe = createRecipeObject(data);
         addBookMark(state.recipe);
     } catch (err) {
@@ -2507,9 +2516,7 @@ exports.export = function(dest, destName, get) {
 },{}],"hGI1E":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getJSON", ()=>getJSON
-);
-parcelHelpers.export(exports, "sendJSON", ()=>sendJSON
+parcelHelpers.export(exports, "AJAX", ()=>AJAX
 );
 //we put functions  here in order to  uses  them repeatedly in all our program
 //this time out function uses to timeout the program if the promise took too long
@@ -2521,32 +2528,16 @@ const timeout = function(s) {
         }, s * 1000);
     });
 };
-const getJSON = async function(url) {
+const AJAX = async function(url, uploadData) {
     try {
-        const fetchPro = fetch(url);
-        const res = await Promise.race([
-            fetchPro,
-            timeout(_configJs.TIME_OUT)
-        ]); //we race the promise with timeout after certain second, the winner then displayed
-        const data = await res.json();
-        //console.log(res, data);
-        if (!res.ok) throw new Error(`${data.message}(${res.status})`); //we throw our own error
-        //lets format the property of the recipe
-        return data;
-    } catch (err) {
-        throw err;
-    }
-};
-const sendJSON = async function(url, uploadData) {
-    try {
-        const fetchPro = fetch(url, {
+        const fetchPro = uploadData ? fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             //Convert a JavaScript object into a string with JSON.stringify().
             body: JSON.stringify(uploadData)
-        });
+        }) : fetch(url);
         const res = await Promise.race([
             fetchPro,
             timeout(_configJs.TIME_OUT)
@@ -2559,7 +2550,44 @@ const sendJSON = async function(url, uploadData) {
     } catch (err) {
         throw err;
     }
+}; /*
+export const getJSON = async function (url) {
+  try {
+    const fetchPro = fetch(url);
+
+    const res = await Promise.race([fetchPro, timeout(TIME_OUT)]); //we race the promise with timeout after certain second, the winner then displayed
+    const data = await res.json();
+    //console.log(res, data);
+    if (!res.ok) throw new Error(`${data.message}(${res.status})`); //we throw our own error
+    //lets format the property of the recipe
+    return data;
+  } catch (err) {
+    throw err;
+  }
 };
+
+export const sendJSON = async function (url, uploadData) {
+  try {
+    const fetchPro = fetch(url, {
+      method: 'POST', // this line of code post the code to the server
+      headers: {
+        'Content-Type': 'application/json', //this the data is in json format
+      },
+      //Convert a JavaScript object into a string with JSON.stringify().
+      body: JSON.stringify(uploadData), //When sending data to a web server, the data has to be a string.
+    });
+
+    const res = await Promise.race([fetchPro, timeout(TIME_OUT)]); //we race the promise with timeout after certain second, the winner then displayed
+    const data = await res.json();
+    //console.log(res, data);
+    if (!res.ok) throw new Error(`${data.message}(${res.status})`); //we throw our own error
+    //lets format the property of the recipe
+    return data;
+  } catch (err) {
+    throw err;
+  }
+};
+*/ 
 
 },{"./config.js":"k5Hzs","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Olh7":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
