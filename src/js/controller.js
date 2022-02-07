@@ -25,6 +25,10 @@ import addRecipeView from './view/addRecipeView.js';
 
 //we will create  async function
 
+const newFeature = function () {
+  console.log('welcome to this new application');
+};
+
 const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1); //we select the hash from the window location of the web page and slice only the number
@@ -160,5 +164,6 @@ const init = function () {
   PaginationVew.addHandlerClick(controlPagination);
   bookMarkView.addHandlerRender(controlBookMark);
   AddRecipeView.addHandlerUpload(controlAddRecipe);
+  newFeature();
 };
 init();
